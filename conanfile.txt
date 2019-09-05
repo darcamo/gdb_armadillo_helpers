@@ -1,0 +1,9 @@
+[requires]
+armadillo/[>=9.400.3]@darcamo/stable
+
+[generators]
+cmake
+
+[options]
+armadillo:use_extern_cxx11_rng=True
+armadillo:use_system_libs=True
