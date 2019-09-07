@@ -1,9 +1,10 @@
 # GDB Armadillo helpers
 
-For now this mainly include pretty printers for vectors and matrices in the
-[armadillo](http://arma.sourceforge.net/) library.
+This included pretty printers for [armadillo](http://arma.sourceforge.net/)
+vectors, matrices and cubes.
 
-It also includes a pretty printer for `std::complex<int>` and `std::complex<double>`.
+It also includes a pretty printer for `std::complex<int>` and
+`std::complex<double>` to make the output nicer.
 
 
 ## Using these pretty printers
@@ -17,6 +18,19 @@ source /path_where_you_cloned/gdb_armadillo_helpers/gdb_helpers/gdb_std_complex_
 source /path_where_you_cloned/gdb_armadillo_helpers/gdb_helpers/gdb_armadillo_xmethods.py
 ```
 
-After that just use `p some_variable** in gdb to see the result.
+After that just use `p some_variable` in gdb to see the result nicely formatted
+using gdb native format for arrays. This means that it will work better if you
+have `set print array on` in your `.gdbinit` file.
 
 **Note**: This also works inside CLion and possible in other IDEs.
+
+
+## Configuration
+
+This adds a parameter that can be enabled/disabled called `arma-show-content`.
+At any time, if you are only interested in vec/mat/cube dimension, the use `set
+arma-show-content off` in gdb and the armadillo pretty printers will only
+display the dimensions. Set the value to `on** to print the elements again.
+
+**Note**: The pretty printers are affected by gdb's native configuration for
+arrays, such as `set print array on/off` and `set print elements SOME_NUMBER`.
