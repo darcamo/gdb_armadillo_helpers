@@ -28,25 +28,22 @@ disabled only the dimension of the container are printed.
 arma_show_content = ShowArmaContentParameter()
 
 
-class ArmaVecPrinter:
-    """
-    Print a armadillo vectors
-
-    @note Does not work very well with row vectors.
-    """
+class ArmaPrettyPrinterBase:
     def __init__(self, val):
         self.val = val
         self.n_rows = val['n_rows']
         self.n_cols = val['n_cols']
         self.n_elem = val['n_elem']
         self.mem = val['mem']
+        # This can be used in subclasses when implementing next_element method
+        # to cast self.mem to some appropriated type
+        self.elem_type = self.mem.type.target().unqualified()
 
     def to_string(self):
-        return f"{self.val.type}({self.n_elem})"
+        raise RuntimeError("Implement-me")
 
     def next_element(self):
-        for i in range(self.n_elem):
-            yield str(i), (self.mem+i).dereference()
+        raise RuntimeError("Implement-me")
 
     def children(self):
         if arma_show_content.value:
@@ -57,17 +54,28 @@ class ArmaVecPrinter:
         return "array"
 
 
-class ArmaMatPrinter:
+class ArmaVecPrinter(ArmaPrettyPrinterBase):
+    """
+    Print a armadillo vectors
+
+    @note Does not work very well with row vectors.
+    """
+    def __init__(self, val):
+        super().__init__(val)
+
+    def to_string(self):
+        return f"{self.val.type}({self.n_elem})"
+
+    def next_element(self):
+        for i in range(self.n_elem):
+            yield str(i), (self.mem+i).dereference()
+
+
+class ArmaMatPrinter(ArmaPrettyPrinterBase):
     """Print a armadillo matrices"""
 
     def __init__(self, val):
-        self.val = val
-        self.n_rows = val['n_rows']
-        self.n_cols = val['n_cols']
-        self.n_elem = val['n_elem']
-        # self.mem = val['mem']
-        self.mem = val['mem']
-        self.elem_type = self.mem.type.target().unqualified()
+        super().__init__(val)
 
     def get_column(self, col_idx):
         """
@@ -96,26 +104,13 @@ class ArmaMatPrinter:
     def to_string(self):
         return f"{self.val.type}({self.n_rows},{self.n_cols})"
 
-    def children(self):
-        if arma_show_content.value:
-            return self.next_element()
-        return []
 
-    def display_hint(self):
-        return "array"
-
-
-class ArmaCubePrinter:
+class ArmaCubePrinter(ArmaPrettyPrinterBase):
     """Print a armadillo matrices"""
     def __init__(self, val):
-        self.val = val
-        self.n_rows = val['n_rows']
-        self.n_cols = val['n_cols']
+        super().__init__(val)
+        # Cubes have an extra parameter called "n_slices"
         self.n_slices = val['n_slices']
-        self.n_elem = val['n_elem']
-        # self.mem = val['mem']
-        self.mem = val['mem']
-        self.elem_type = self.mem.type.target().unqualified()
 
     def get_slice(self, col_idx):
         """
@@ -147,18 +142,8 @@ class ArmaCubePrinter:
     def to_string(self):
         return f"{self.val.type}({self.n_rows},{self.n_cols},{self.n_slices})"
 
-    def children(self):
-        if arma_show_content.value:
-            return self.next_element()
-        return []
 
-    def display_hint(self):
-        return "array"
-
-
-
-
-
+# Register the pretty printers
 import gdb.printing
 pp = gdb.printing.RegexpCollectionPrettyPrinter('armadillo')
 pp.add_printer('arma::Col', '^arma::Col', ArmaVecPrinter)
