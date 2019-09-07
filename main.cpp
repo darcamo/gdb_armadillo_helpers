@@ -1,6 +1,13 @@
 #include <armadillo>
 #include <iostream>
 
+#if defined(ARMA_USE_EXTERN_CXX11_RNG)
+namespace arma {
+thread_local arma_rng_cxx11 arma_rng_cxx11_instance;  // NOLINT
+}  // namespace arma
+#endif
+
+
 int main() {
   int a[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
@@ -17,6 +24,10 @@ int main() {
   arma::cx_vec v2{1.1, 2.2, 3, 4, 5, 6};
   arma::uvec v3{1, 2, 3, 4, 5, 6};
   arma::ivec v4{1, 2, 3, 4, 5, 6};
+
+  arma::cube u1 = arma::randu<arma::cube>(2,3,4);
+  u1.print();
+
 
   // Add a breakpoint below, load the pretty printers and then try to print the variables
   return 0;
