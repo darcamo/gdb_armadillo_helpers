@@ -26,8 +26,22 @@ int main() {
   arma::ivec v4{1, 2, 3, 4, 5, 6};
 
   arma::cube u1 = arma::randu<arma::cube>(2,3,4);
-  u1.print();
 
+  std::cout << "v1.max() is " << v1.max() << std::endl;
+  std::cout << "m1.max() is " << m1.max() << std::endl;
+  std::cout << "u1.max() is " << u1.max() << std::endl;
+
+  std::cout << "v1.min() is " << v1.min() << std::endl;
+  std::cout << "m1.min() is " << m1.min() << std::endl;
+  std::cout << "u1.min() is " << u1.min() << std::endl;
+
+  std::cout << "v1.empty() is " << v1.empty() << std::endl;
+  std::cout << "m1.empty() is " << m1.empty() << std::endl;
+  std::cout << "u1.empty() is " << u1.empty() << std::endl;
+
+  std::cout << "v1.size() is " << v1.size() << std::endl;
+  std::cout << "m1.size() is " << m1.size() << std::endl;
+  std::cout << "u1.size() is " << u1.size() << std::endl;
 
   // Add a breakpoint below, load the pretty printers and then try to print the variables
   return 0;

@@ -1,7 +1,7 @@
 # GDB Armadillo helpers
 
 This included pretty printers for [armadillo](http://arma.sourceforge.net/)
-vectors, matrices and cubes.
+vectors, matrices and cubes, as well as a few xmethods.
 
 It also includes a pretty printer for `std::complex<int>` and
 `std::complex<double>` to make the output nicer.
@@ -34,3 +34,16 @@ display the dimensions. Set the value to `on** to print the elements again.
 
 **Note**: The pretty printers are affected by gdb's native configuration for
 arrays, such as `set print array on/off` and `set print elements SOME_NUMBER`.
+
+## XMethods
+
+XMethods are a feature of GDB python API that allow the re-implementation of C++
+methods in Python in order for GDB to use. These C++ methods might not be
+available due to be inlined, optimized out, or simply because there is no
+inferior in gdb (you are debugging from a core file).
+
+The currently implemented xmethods are:
+- min
+- max
+- size
+- empty
