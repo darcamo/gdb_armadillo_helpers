@@ -39,11 +39,12 @@ arrays, such as `set print array on/off` and `set print elements SOME_NUMBER`.
 
 XMethods are a feature of GDB python API that allow the re-implementation of C++
 methods in Python in order for GDB to use. These C++ methods might not be
-available due to be inlined, optimized out, or simply because there is no
-inferior in gdb (you are debugging from a core file).
+available due to being inlined, optimized out, or simply because there is no
+inferior running (you are debugging from a core file, for instance).
 
 The currently implemented xmethods are:
 - min
 - max
 - size
 - empty
+- at (linear indexing for vectors, matrices and cubes, as well as 2D index for matrices and 3D indexing for cubes)
