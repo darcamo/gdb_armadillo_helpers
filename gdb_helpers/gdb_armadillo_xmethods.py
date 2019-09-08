@@ -163,6 +163,7 @@ class ArmaCubeMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [
             ArmaXMethod_common("at", ArmaVecAtWorker),  # The 'vec' worker is for 1d access
             ArmaXMethod_common("at", ArmaCubeAtWorker), # The 'vec' worker is for 3d access
+            ArmaXMethod_common("slice", ArmaCubeSliceWorker), # Returns a 2D array
         ]
 
     # This method should return an XMethodWorker object, or a sequence of
@@ -339,6 +340,37 @@ class ArmaCubeAtWorker(gdb.xmethod.XMethodWorker):
         if slice_idx < 0 or slice_idx >= n_slices:
             raise gdb.error(f"Slice index out of bounds -> It must be between 0 and {n_slices-1}")
         return obj["mem"][slice_idx * num_elem_per_slice + col_idx*n_rows + row_idx]
+
+
+class ArmaCubeSliceWorker(gdb.xmethod.XMethodWorker):
+    @staticmethod
+    def get_slice_type(obj):
+        n_rows = obj["n_rows"]
+        n_cols = obj["n_cols"]
+        elem_type = obj["mem"].type.target().unqualified()
+        column_type = elem_type.array(n_rows-1)
+        slice_type = column_type.array(n_cols-1)
+
+        return slice_type
+
+    def get_arg_types(self):
+        return gdb.lookup_type('int')
+
+    def get_result_type(self, obj, slice_idx):
+        return self.get_slice_type(obj)
+
+    def __call__(self, obj, slice_idx):
+        n_rows = obj["n_rows"]
+        n_cols = obj["n_cols"]
+        n_slices = obj["n_slices"]
+        num_elem_per_slice = n_rows * n_cols
+
+        if slice_idx < 0 or slice_idx >= n_slices:
+            raise gdb.error(f"Slice index out of bounds -> It must be between 0 and {n_slices-1}")
+
+        slice_type = self.get_slice_type(obj)
+
+        return (obj["mem"][slice_idx * num_elem_per_slice]).cast(slice_type)
 
 
 

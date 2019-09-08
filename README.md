@@ -48,3 +48,4 @@ The currently implemented xmethods are:
 - size
 - empty
 - at (linear indexing for vectors, matrices and cubes, as well as 2D index for matrices and 3D indexing for cubes)
+- slice (for cubes)
