@@ -34,8 +34,7 @@ import gdb.xmethod
 
 
 # The XMethodWorker is in charge of actually implementing the desired
-# functionality. It has the following methods: 'get_arg_types',
-# 'get_result_type' and '__call__'
+# functionality. It has the following methods: 'get_arg_types', and '__call__'
 
 
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -196,16 +195,6 @@ class ArmaWorker_noarg_base(gdb.xmethod.XMethodWorker):
         """
         return None
 
-    def get_result_type(self, obj):
-        """
-        Return the type of the result of the xmethod.
-
-        Returns:
-            A gdb.Type object representing the type of the result of the
-            xmethod.
-        """
-        return gdb.lookup_type('void')
-
     def __call__(self, obj):
         raise RuntimeError("Implement-me")
 
@@ -292,10 +281,6 @@ class ArmaVecAtWorker(gdb.xmethod.XMethodWorker):
     def get_arg_types(self):
         return gdb.lookup_type('int')
 
-    def get_result_type(self, obj, index):
-        elem_type = obj["mem"].type.target().unqualified()
-        return elem_type
-
     def __call__(self, obj, index):
         if index < 0 or index >= obj["n_elem"]:
             raise gdb.error(f"Cannot get element with index {index} from {obj.type.target()} with {obj['n_elem']} elements")
@@ -305,10 +290,6 @@ class ArmaVecAtWorker(gdb.xmethod.XMethodWorker):
 class ArmaMatAtWorker(gdb.xmethod.XMethodWorker):
     def get_arg_types(self):
         return [gdb.lookup_type('int'), gdb.lookup_type('int')]
-
-    def get_result_type(self, obj, row_idx, col_idx):
-        elem_type = obj["mem"].type.target().unqualified()
-        return elem_type
 
     def __call__(self, obj, row_idx, col_idx):
         n_rows = obj["n_rows"]
@@ -323,10 +304,6 @@ class ArmaMatAtWorker(gdb.xmethod.XMethodWorker):
 class ArmaCubeAtWorker(gdb.xmethod.XMethodWorker):
     def get_arg_types(self):
         return [gdb.lookup_type('int'), gdb.lookup_type('int'), gdb.lookup_type('int')]
-
-    def get_result_type(self, obj, row_idx, col_idx, slice_idx):
-        elem_type = obj["mem"].type.target().unqualified()
-        return elem_type
 
     def __call__(self, obj, row_idx, col_idx, slice_idx):
         n_rows = obj["n_rows"]
@@ -355,9 +332,6 @@ class ArmaCubeSliceWorker(gdb.xmethod.XMethodWorker):
 
     def get_arg_types(self):
         return gdb.lookup_type('int')
-
-    def get_result_type(self, obj, slice_idx):
-        return self.get_slice_type(obj)
 
     def __call__(self, obj, slice_idx):
         n_rows = obj["n_rows"]
