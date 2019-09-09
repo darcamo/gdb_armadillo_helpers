@@ -163,6 +163,7 @@ class ArmaCubeMatcher(gdb.xmethod.XMethodMatcher):
             ArmaXMethod_common("at", ArmaVecAtWorker),  # The 'vec' worker is for 1d access
             ArmaXMethod_common("at", ArmaCubeAtWorker), # The 'vec' worker is for 3d access
             ArmaXMethod_common("slice", ArmaCubeSliceWorker), # Returns a 2D array
+            ArmaXMethod_common("tube", ArmaCubeTubeWorker), # Returns a 2D array
         ]
 
     # This method should return an XMethodWorker object, or a sequence of
@@ -347,9 +348,26 @@ class ArmaCubeSliceWorker(gdb.xmethod.XMethodWorker):
         return (obj["mem"][slice_idx * num_elem_per_slice]).cast(slice_type)
 
 
+class ArmaCubeTubeWorker(gdb.xmethod.XMethodWorker):
+    @staticmethod
+    def get_tube_type(obj):
+        n_slices = obj["n_slices"]
+        elem_type = obj["mem"].type.target().unqualified()
+        tube_type = elem_type.array(n_slices-1)
+        return tube_type
+
+    def get_arg_types(self):
+        return [gdb.lookup_type('int'), gdb.lookup_type('int')]
+
+    def __call__(self, obj, row_idx, col_idx):
+        tube_type = self.get_tube_type(obj)
+        lista = [obj["mem"][i] for i in range(3)]
+        print(lista)
+        return obj["mem"][0]
+
 
 # xxxxxxxxxx Register the xmethods matcher xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-gdb.xmethod.register_xmethod_matcher(None, ArmaMatcher())
-gdb.xmethod.register_xmethod_matcher(None, ArmaVecMatcher())
-gdb.xmethod.register_xmethod_matcher(None, ArmaMatMatcher())
-gdb.xmethod.register_xmethod_matcher(None, ArmaCubeMatcher())
+gdb.xmethod.register_xmethod_matcher(None, ArmaMatcher(), replace=True)
+gdb.xmethod.register_xmethod_matcher(None, ArmaVecMatcher(), replace=True)
+gdb.xmethod.register_xmethod_matcher(None, ArmaMatMatcher(), replace=True)
+gdb.xmethod.register_xmethod_matcher(None, ArmaCubeMatcher(), replace=True)
