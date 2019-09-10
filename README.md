@@ -15,7 +15,6 @@ your home folder
 ```gdb
 source /path_where_you_cloned/gdb_armadillo_helpers/gdb_helpers/gdb_armadillo_printers.py
 source /path_where_you_cloned/gdb_armadillo_helpers/gdb_helpers/gdb_std_complex_printer.py
-source /path_where_you_cloned/gdb_armadillo_helpers/gdb_helpers/gdb_armadillo_xmethods.py
 ```
 
 After that just use `p some_variable` in gdb to see the result nicely formatted
@@ -49,3 +48,37 @@ The currently implemented xmethods are:
 - empty
 - at (linear indexing for vectors, matrices and cubes, as well as 2D index for matrices and 3D indexing for cubes)
 - slice (for cubes)
+
+In order to have them available, add the code below to the .gdbinit in your home
+folder
+
+```gdb
+source /path_where_you_cloned/gdb_armadillo_helpers/gdb_helpers/gdb_armadillo_xmethods.py
+```
+
+## Custom 'print-numpy-array' gdb command and 'get_array' python function
+
+Add the code below to the .gdbinit in your home folder
+
+```gdb
+source /path_where_you_cloned/gdb_armadillo_helpers/gdb_helpers/gdb_armadillo_to_numpy.py
+```
+
+Now you can call the 'print-numpy-array' gdb command passing the name(s) of any
+variables in the current scope that are armadillo types. Note that you can
+complete the variable names with <kbd>TAB</kbd>.
+
+If you need more power, you can start the python interactive terminal from gdb
+with the the `pi` command (python-interactive). Once you are in the python
+terminal inside gdb, use the code below to get a numpy array from a variable
+called `m`.
+
+```python
+m = get_array(gdb.parse_and_eval('m'))
+```
+
+From there you can manipulate the numpy array as you want (print, compute the
+norm, etc), 
+
+**Note**: Changes to this numpy array are not propagated in any way to the original
+`m` variable.
