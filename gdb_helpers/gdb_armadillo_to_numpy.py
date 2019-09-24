@@ -77,8 +77,10 @@ def get_array(arma_container):
                                  "long long": np.int64}
 
     vector_classes = ["arma::vec", "arma::uvec", "arma::cx_vec", "arma::ivec"]
-    matrix_classes = ["arma::mat", "arma::umat", "arma::cx_mat", "arma::imat"]
-    cube_classes = ["arma::cube", "arma::ucube", "arma::cx_cube", "arma::icube"]
+    matrix_classes = ["arma::mat", "arma::umat", "arma::cx_mat", "arma::imat",
+                      "arma::Mat<double>"]
+    cube_classes = ["arma::cube", "arma::ucube", "arma::cx_cube",
+                    "arma::icube"]
 
     if arma_container.type.name in vector_classes:
         shape = (n_elem)
