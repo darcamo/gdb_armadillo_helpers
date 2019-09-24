@@ -71,20 +71,25 @@ def get_array(arma_container):
     mem = arma_container["mem"]
     elem_type = mem.type.target().unqualified()
 
-    elem_type_to_numpy_types = {"double": np.float64,
-                                 "std::complex<double>": np.complex128,
-                                 "unsigned long long": np.uint64,
-                                 "long long": np.int64}
+    elem_type_to_numpy_types = {
+        "double": np.float64,
+        "std::complex<double>": np.complex128,
+        "unsigned long long": np.uint64,
+        "long long": np.int64
+    }
 
     vector_classes = ["arma::vec", "arma::uvec", "arma::cx_vec", "arma::ivec"]
-    matrix_classes = ["arma::mat", "arma::umat", "arma::cx_mat", "arma::imat",
-                      "arma::Mat<double>"]
-    cube_classes = ["arma::cube", "arma::ucube", "arma::cx_cube",
-                    "arma::icube"]
+    matrix_classes = [
+        "arma::mat", "arma::umat", "arma::cx_mat", "arma::imat",
+        "arma::Mat<double>"
+    ]
+    cube_classes = [
+        "arma::cube", "arma::ucube", "arma::cx_cube", "arma::icube"
+    ]
 
     if arma_container.type.name in vector_classes:
         shape = (n_elem)
-        dtype=elem_type_to_numpy_types[elem_type.name]
+        dtype = elem_type_to_numpy_types[elem_type.name]
 
     if arma_container.type.name in matrix_classes:
         shape = (n_rows, n_cols)
@@ -92,16 +97,19 @@ def get_array(arma_container):
     if arma_container.type.name in cube_classes:
         n_slices = arma_container["n_slices"]
         shape = (n_rows, n_cols, n_slices)
-        dtype=elem_type_to_numpy_types[elem_type.name]
+        dtype = elem_type_to_numpy_types[elem_type.name]
 
-    return np.array(_get_list_of_elements(arma_container), dtype=dtype, order='F').reshape(shape, order='F')
+    return np.array(_get_list_of_elements(arma_container),
+                    dtype=dtype,
+                    order='F').reshape(shape, order='F')
+
 
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
 
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # xxxxxxxxxxxxxxx Custom GDB commands xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 
 # Inspired from
 # https://interrupt.memfault.com/blog/automate-debugging-with-gdb-python-api
@@ -115,7 +123,7 @@ class PrintNumpyArrayCommand(gdb.Command):
     def __init__(self):
         super().__init__("print-numpy-array", gdb.COMMAND_USER)
 
-    def complete(self, text, word):
+    def complete(self, text, word):  # pylint: disable=W0613, C0111, R0201
         # The comment return below would return all available symbols,
         # including internal ones and variables which are not armadillo type
         #
@@ -132,21 +140,22 @@ class PrintNumpyArrayCommand(gdb.Command):
         # If we return this list of symbols, then our command will only
         # complete for these symbols. We return the names of all variables in
         # the current scope which are armadillo variables
-        return [i.name for i in block if i.type.name is not None and i.type.name[:6] == 'arma::']
+        return [
+            i.name for i in block
+            if i.type.name is not None and i.type.name[:6] == 'arma::'
+        ]
 
     def invoke(self, args, from_tty):
         argsv = gdb.string_to_argv(args)
         if len(argsv) > 1:
             for variable in argsv:
-                print(f'{variable}:\n', get_array(gdb.parse_and_eval(variable)))
+                print(f'{variable}:\n',
+                      get_array(gdb.parse_and_eval(variable)))
         else:
             print(get_array(gdb.parse_and_eval(argsv[0])))
 
 
 PrintNumpyArrayCommand()
-
-
-
 
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # if __name__ == '__main__':
@@ -183,8 +192,6 @@ PrintNumpyArrayCommand()
 #     print("u2:\n", get_array(u2))
 #     print("u3:\n", get_array(u3))
 #     print("u4:\n", get_array(u4))
-
-
 
 # # TIP: In GDB, run interactive python with `pi` command then in the python prompt run
 # # exec(open("../../gdb_helpers/gdb_armadillo_to_numpy.py").read())
