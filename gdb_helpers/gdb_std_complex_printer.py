@@ -4,6 +4,35 @@ import math
 import gdb.printing
 
 
+class ShowComplexNumberInPolar(gdb.Parameter):
+    """
+When complex-show-polar is enabled (default) the std::complex
+pretty-printer will print the complex number also in polar form. When disabled
+only the rectangular form is printed.
+    """
+
+    set_doc = "Enable/disable the complex-show-polar parameter."
+    show_doc = "Show the value of complex-show-polar"
+
+    def __init__(self):
+        super().__init__("complex-show-polar", gdb.COMMAND_NONE,
+                         gdb.PARAM_BOOLEAN)
+        self.value = True
+
+    def get_set_string(self):
+        if self.value:
+            return "complex-show-polar is enabled"
+        else:
+            return "complex-show-polar is disabled"
+
+    def get_show_string(self, svalue):
+        return f"complex-show-polar is set to {svalue}"
+
+
+complex_show_polar = ShowComplexNumberInPolar()
+# xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
 class StdComplexIntPrinter:
     """
     Print std::complex<int> without the annoying _M_value
@@ -11,11 +40,21 @@ class StdComplexIntPrinter:
     def __init__(self, val):
         self.real_part = val["_M_real"]
         self.imag_part = val["_M_imag"]
+        self.c = complex(self.real_part, self.imag_part)
 
     def to_string(self):
-        if self.imag_part >= 0:
-            return "{0} + {1}i".format(self.real_part, self.imag_part)
-        return "{0} - {1}i".format(self.real_part, abs(self.imag_part))
+        real_sign = " " if self.real_part >=0 else "-"
+        imag_sign = "+" if self.imag_part >= 0 else "-"
+
+        real_part =  "{0}{1} {2} {3}i".format(real_sign, abs(self.real_part), imag_sign, abs(self.imag_part))
+
+        angle = 180.0 * cmath.phase(self.c) / math.pi
+
+        if complex_show_polar.value:
+            imag_part = " ({0:.2f} ⦞ {1:.2f}°)".format(abs(self.c), angle)
+            return real_part + imag_part
+
+        return real_part
 
 
 class StdComplexDoublePrinter:
@@ -23,15 +62,27 @@ class StdComplexDoublePrinter:
     Print std::complex<double> without the annoying _M_value
     """
     def __init__(self, val):
-        self.val = val.cast(gdb.lookup_type("double").array(1))
-        self.real_part = self.val[0]
-        self.imag_part = self.val[1]
+        # Cast to an array of two doubles, where the first one is the real part
+        # and the second one is the imaginary part.
+        val = val.cast(gdb.lookup_type("double").array(1))
+        self.real_part = val[0]
+        self.imag_part = val[1]
         self.c = complex(self.real_part, self.imag_part)
 
     def to_string(self):
         angle = 180.0 * cmath.phase(self.c) / math.pi
-        sign = "+" if self.imag_part >= 0 else "-"
-        return "{0:.4f} {1} {2:.4f}i ({3:.2f} ⦞ {4:.2f}°)".format(float(self.real_part), sign, abs(float(self.imag_part)), abs(self.c), angle)
+        real_sign = " " if self.real_part >=0 else "-"
+        imag_sign = "+" if self.imag_part >= 0 else "-"
+
+        real_part = "{0}{1:.4f} {2} {3:.4f}i".format(real_sign, abs(float(self.real_part)), imag_sign, abs(float(self.imag_part)))
+
+        if complex_show_polar.value:
+            imag_part = " ({0:.2f} ⦞ {1:.2f}°)".format(abs(self.c), angle)
+            return real_part + imag_part
+
+        return real_part
+
+        # return "{0}{1:.4f} {2} {3:.4f}i ({4:.2f} ⦞ {5:.2f}°)".format(real_sign, abs(float(self.real_part)), imag_sign, abs(float(self.imag_part)), abs(self.c), angle)
 
 
 
