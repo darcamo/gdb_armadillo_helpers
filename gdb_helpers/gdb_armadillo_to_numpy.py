@@ -56,8 +56,9 @@ def get_array(arma_container):
 
     Parameters
     ----------
-    arma_container : gdb.Value
-        A gdb.Value object containing an armadillo type.
+    arma_container : gdb.Value, str
+        A `gdb.Value` object containing an armadillo type or a variable name
+        from which we can obtain a `gdb.Value` using `gdb.parse_and_eval`
 
     Returns
     -------
@@ -65,6 +66,9 @@ def get_array(arma_container):
         A numpy array with the elements and the same shape as the provided
         arma_container.
     """
+    if isinstance(arma_container, str):
+        arma_container = gdb.parse_and_eval(arma_container)
+
     n_rows = arma_container["n_rows"]
     n_cols = arma_container["n_cols"]
     n_elem = arma_container["n_elem"]
@@ -150,9 +154,9 @@ class PrintNumpyArrayCommand(gdb.Command):
         if len(argsv) > 1:
             for variable in argsv:
                 print(f'{variable}:\n',
-                      get_array(gdb.parse_and_eval(variable)))
+                      get_array(variable))
         else:
-            print(get_array(gdb.parse_and_eval(argsv[0])))
+            print(get_array(argsv[0]))
 
 
 PrintNumpyArrayCommand()
