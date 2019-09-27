@@ -1,6 +1,8 @@
 import cmath
 import math
 
+import gdb.printing
+
 
 class StdComplexIntPrinter:
     """
@@ -29,11 +31,10 @@ class StdComplexDoublePrinter:
     def to_string(self):
         angle = 180.0 * cmath.phase(self.c) / math.pi
         sign = "+" if self.imag_part >= 0 else "-"
-        return "{0:.4} {1} {2:.4}i ({3:.2}:{4:.2}°)".format(float(self.real_part), sign, abs(float(self.imag_part)), abs(self.c), angle)
+        return "{0:.4f} {1} {2:.4f}i ({3:.2f} ⦞ {4:.2f}°)".format(float(self.real_part), sign, abs(float(self.imag_part)), abs(self.c), angle)
 
 
 
-import gdb.printing
 pp = gdb.printing.RegexpCollectionPrettyPrinter('std::complex')
 pp.add_printer('std::complex<int>', '^std::complex<int>', StdComplexIntPrinter)
 pp.add_printer('std::complex<double>', '^std::complex<double>', StdComplexDoublePrinter)
