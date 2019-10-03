@@ -82,7 +82,7 @@ def get_array(arma_container):
         "long long": np.int64
     }
 
-    vector_classes = ["arma::vec", "arma::uvec", "arma::cx_vec", "arma::ivec"]
+    vector_classes = ["arma::vec", "arma::uvec", "arma::cx_vec", "arma::ivec", "arma::Col<std::complex<double> >"]
     matrix_classes = [
         "arma::mat", "arma::umat", "arma::cx_mat", "arma::imat",
         "arma::Mat<double>"
