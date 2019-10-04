@@ -66,6 +66,8 @@ def get_array(arma_container):
         A numpy array with the elements and the same shape as the provided
         arma_container.
     """
+    # In case the user passed the name of the varaible, instead of a gdb.Value,
+    # we get the corresponding gdb.Value
     if isinstance(arma_container, str):
         arma_container = gdb.parse_and_eval(arma_container)
 
