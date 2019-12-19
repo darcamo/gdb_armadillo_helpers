@@ -1,5 +1,6 @@
 #include <armadillo>
 #include <iostream>
+#include <vector>
 
 #if defined(ARMA_USE_EXTERN_CXX11_RNG)
 namespace arma {
@@ -102,7 +103,14 @@ int main() {
   u3.print("u3");
   u4.print("u4");
 
+  std::vector<double> stlvec;
+  stlvec.reserve(10000);
+  for (unsigned int i = 0; i < 10000; i++) {
+    stlvec.push_back(arma::randn());
+  }
+
   // Add a breakpoint below, load the pretty printers and then try to print the
   // variables
+  std::cout << "The End" << std::endl;
   return 0;
 }

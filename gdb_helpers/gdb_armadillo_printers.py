@@ -1,5 +1,8 @@
-from itertools import product
 import re
+from itertools import product
+
+# Register the pretty printers
+import gdb.printing
 
 
 class ShowArmaContentParameter(gdb.Parameter):
@@ -155,8 +158,6 @@ class ArmaCubePrinter(ArmaPrettyPrinterBase):
         return f"{self.val.type}({self.n_rows},{self.n_cols},{self.n_slices})"
 
 
-# Register the pretty printers
-import gdb.printing
 pp = gdb.printing.RegexpCollectionPrettyPrinter('armadillo')
 pp.add_printer('arma::Col', '^arma::Col', ArmaVecPrinter)
 pp.add_printer('arma::Mat', '^arma::Mat', ArmaMatPrinter)
