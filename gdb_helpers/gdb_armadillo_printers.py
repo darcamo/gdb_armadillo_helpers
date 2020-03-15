@@ -26,6 +26,11 @@ disabled only the dimension of the container are printed.
         else:
             return "arma-show-content is disabled"
 
+    def is_created(self):
+        if self.n_elem == self.n_rows*self.n_cols and self.n_rows != 0 and self.n_cols != 0 and self.n_elem != 0:
+            return True
+        return False
+
     def get_show_string(self, svalue):
         return f"arma-show-content is set to {svalue}"
 
@@ -59,7 +64,7 @@ class ArmaPrettyPrinterBase:
         raise RuntimeError("Implement-me")
 
     def children(self):
-        if arma_show_content.value:
+        if arma_show_content.value and self.is_created():
             return self.next_element()
         return []
 
@@ -124,6 +129,7 @@ class ArmaCubePrinter(ArmaPrettyPrinterBase):
         super().__init__(val)
         # Cubes have an extra parameter called "n_slices"
         self.n_slices = val['n_slices']
+        self.n_elem = val['n_elem']
 
     def get_slice(self, col_idx):
         """
@@ -153,6 +159,11 @@ class ArmaCubePrinter(ArmaPrettyPrinterBase):
         """
         for slice_idx in range(self.n_slices):
             yield "Slice " + str(slice_idx), self.get_slice(slice_idx)
+
+    def is_created(self):
+        if self.n_elem == self.n_rows*self.n_cols*self.n_slices and self.n_rows != 0 and self.n_cols != 0 and self.n_slices != 0 and self.n_elem != 0:
+            return True
+        return False
 
     def to_string(self):
         return f"{self.val.type}({self.n_rows},{self.n_cols},{self.n_slices})"
