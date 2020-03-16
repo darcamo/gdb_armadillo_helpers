@@ -16,8 +16,8 @@ disabled only the dimension of the container are printed.
     show_doc = "Show the value of arma-show-content"
 
     def __init__(self):
-        super().__init__("arma-show-content", gdb.COMMAND_NONE,
-                         gdb.PARAM_BOOLEAN)
+        super(gdb.Parameter, self).__init__("arma-show-content", gdb.COMMAND_NONE, gdb.PARAM_BOOLEAN)
+#        gdb.Parameter("arma-show-content", gdb.COMMAND_NONE, gdb.PARAM_BOOLEAN)
         self.value = True
 
     def get_set_string(self):
@@ -27,14 +27,15 @@ disabled only the dimension of the container are printed.
             return "arma-show-content is disabled"
 
     def get_show_string(self, svalue):
-        return f"arma-show-content is set to {svalue}"
+        return "arma-show-content is set to (0)".format(svalue)
+#        return "arma-show-content is set to " + str(svalue)
 
 
 arma_show_content = ShowArmaContentParameter()
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 
-class ArmaPrettyPrinterBase:
+class ArmaPrettyPrinterBase(object):
     def __init__(self, val):
         self.val = val
         self.mem = val['mem']
@@ -46,7 +47,7 @@ class ArmaPrettyPrinterBase:
         # n_cols and n_elem fields gdb will complain that they were optimized
         # out. However, if we cast it to the corresponding non-fixed matrix we
         # can get these fields.
-        mat_type = gdb.lookup_type(f"arma::Mat<{self.elem_type.name}>")
+        mat_type = gdb.lookup_type("arma::Mat<{0}>".format(self.elem_type.name))
         val = val.cast(mat_type)
         self.n_rows = int(val['n_rows'])
         self.n_cols = int(val['n_cols'])
@@ -59,9 +60,14 @@ class ArmaPrettyPrinterBase:
         raise RuntimeError("Implement-me")
 
     def children(self):
-        if arma_show_content.value:
+        if arma_show_content.value and self.is_created():
             return self.next_element()
         return []
+
+    def is_created(self):
+        if self.n_elem == self.n_rows*self.n_cols and self.n_rows != 0 and self.n_cols != 0 and self.n_elem != 0:
+            return True
+        return False
 
     def display_hint(self):
         return "array"
@@ -74,10 +80,10 @@ class ArmaVecPrinter(ArmaPrettyPrinterBase):
     @note Does not work very well with row vectors.
     """
     def __init__(self, val):
-        super().__init__(val)
+        super(ArmaVecPrinter, self).__init__(val)
 
     def to_string(self):
-        return f"{self.val.type}({self.n_elem})"
+		return "{0}({1})".format(self.val.type, self.n_elem)
 
     def next_element(self):
         for i in range(self.n_elem):
@@ -87,7 +93,7 @@ class ArmaVecPrinter(ArmaPrettyPrinterBase):
 class ArmaMatPrinter(ArmaPrettyPrinterBase):
     """Print a armadillo matrices"""
     def __init__(self, val):
-        super().__init__(val)
+        super(ArmaMatPrinter, self).__init__(val)
 
     def get_column(self, col_idx):
         """
@@ -115,15 +121,18 @@ class ArmaMatPrinter(ArmaPrettyPrinterBase):
             yield "Column " + str(col_idx), self.get_column(col_idx)
 
     def to_string(self):
-        return f"{self.val.type}({self.n_rows},{self.n_cols})"
+        return "{0}({1},{2})".format(self.val.type, self.n_rows, self.n_cols)
+#        return str(self.val.type) + "(" + str(self.n_rows) + str(self.n_cols) + ")"
+#        return f"{self.val.type}({self.n_rows},{self.n_cols})"
 
 
 class ArmaCubePrinter(ArmaPrettyPrinterBase):
     """Print a armadillo matrices"""
     def __init__(self, val):
-        super().__init__(val)
+        super(ArmaCubePrinter, self).__init__(val)
         # Cubes have an extra parameter called "n_slices"
         self.n_slices = val['n_slices']
+        self.n_elem = val['n_elem']
 
     def get_slice(self, col_idx):
         """
@@ -138,9 +147,7 @@ class ArmaCubePrinter(ArmaPrettyPrinterBase):
         # Deference self.mem to get the first element in the column and then
         # cast it to be an array of elements. This will result in an array
         # containing all elements in the column
-        column = (
-            (self.mem +
-             col_idx * num_elements_per_slice).dereference()).cast(slice_type)
+        column = ((self.mem + col_idx * num_elements_per_slice).dereference()).cast(slice_type)
 
         return column
 
@@ -154,12 +161,17 @@ class ArmaCubePrinter(ArmaPrettyPrinterBase):
         for slice_idx in range(self.n_slices):
             yield "Slice " + str(slice_idx), self.get_slice(slice_idx)
 
-    def to_string(self):
-        return f"{self.val.type}({self.n_rows},{self.n_cols},{self.n_slices})"
+    def is_created(self):
+        if self.n_elem == self.n_rows*self.n_cols*self.n_slices and self.n_rows != 0 and self.n_cols != 0 and self.n_slices != 0 and self.n_elem != 0:
+            return True
+        return False
 
+    def to_string(self):
+		return "{0}({1},{2},{3})".format(self.val.type, self.n_rows, self.n_cols, self.n_slices)
 
 pp = gdb.printing.RegexpCollectionPrettyPrinter('armadillo')
 pp.add_printer('arma::Col', '^arma::Col', ArmaVecPrinter)
+pp.add_printer('arma::Row', '^arma::Row', ArmaVecPrinter)
 pp.add_printer('arma::Mat', '^arma::Mat', ArmaMatPrinter)
-pp.add_printer('arma::Cuve', '^arma::Cube', ArmaCubePrinter)
+pp.add_printer('arma::Cube', '^arma::Cube', ArmaCubePrinter)
 gdb.printing.register_pretty_printer(gdb.current_objfile(), pp, replace=True)
