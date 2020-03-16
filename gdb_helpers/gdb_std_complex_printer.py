@@ -6,9 +6,9 @@ import gdb.printing
 
 class ShowComplexNumberInPolar(gdb.Parameter):
     """
-When complex-show-polar is enabled (default) the std::complex
-pretty-printer will print the complex number also in polar form. When disabled
-only the rectangular form is printed.
+    When complex-show-polar is enabled (default) the std::complex
+    pretty-printer will print the complex number also in polar form. When disabled
+    only the rectangular form is printed.
     """
 
     set_doc = "Enable/disable the complex-show-polar parameter."
@@ -43,10 +43,11 @@ class StdComplexIntPrinter:
         self.c = complex(self.real_part, self.imag_part)
 
     def to_string(self):
-        real_sign = " " if self.real_part >=0 else "-"
+        real_sign = " " if self.real_part >= 0 else "-"
         imag_sign = "+" if self.imag_part >= 0 else "-"
 
-        real_part =  "{0}{1} {2} {3}i".format(real_sign, abs(self.real_part), imag_sign, abs(self.imag_part))
+        real_part = "{0}{1} {2} {3}i".format(real_sign, abs(self.real_part),
+                                             imag_sign, abs(self.imag_part))
 
         angle = 180.0 * cmath.phase(self.c) / math.pi
 
@@ -71,10 +72,12 @@ class StdComplexDoublePrinter:
 
     def to_string(self):
         angle = 180.0 * cmath.phase(self.c) / math.pi
-        real_sign = " " if self.real_part >=0 else "-"
+        real_sign = " " if self.real_part >= 0 else "-"
         imag_sign = "+" if self.imag_part >= 0 else "-"
 
-        real_part = "{0}{1:.4f} {2} {3:.4f}i".format(real_sign, abs(float(self.real_part)), imag_sign, abs(float(self.imag_part)))
+        real_part = "{0}{1:.4f} {2} {3:.4f}i".format(
+            real_sign, abs(float(self.real_part)), imag_sign,
+            abs(float(self.imag_part)))
 
         if complex_show_polar.value:
             imag_part = " ({0:.2f} ⦞ {1:.2f}°)".format(abs(self.c), angle)
@@ -85,8 +88,8 @@ class StdComplexDoublePrinter:
         # return "{0}{1:.4f} {2} {3:.4f}i ({4:.2f} ⦞ {5:.2f}°)".format(real_sign, abs(float(self.real_part)), imag_sign, abs(float(self.imag_part)), abs(self.c), angle)
 
 
-
 pp = gdb.printing.RegexpCollectionPrettyPrinter('std::complex')
 pp.add_printer('std::complex<int>', '^std::complex<int>', StdComplexIntPrinter)
-pp.add_printer('std::complex<double>', '^std::complex<double>', StdComplexDoublePrinter)
+pp.add_printer('std::complex<double>', '^std::complex<double>',
+               StdComplexDoublePrinter)
 gdb.printing.register_pretty_printer(gdb.current_objfile(), pp, replace=True)
