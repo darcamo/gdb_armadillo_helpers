@@ -126,10 +126,6 @@ class ArmaMatPrinter(ArmaPrettyPrinterBase):
         return "{0}({1},{2})".format(self.val.type, self.n_rows, self.n_cols)
 
 
-#        return str(self.val.type) + "(" + str(self.n_rows) + str(self.n_cols) + ")"
-#        return f"{self.val.type}({self.n_rows},{self.n_cols})"
-
-
 class ArmaCubePrinter(ArmaPrettyPrinterBase):
     """Print a armadillo matrices"""
     def __init__(self, val):

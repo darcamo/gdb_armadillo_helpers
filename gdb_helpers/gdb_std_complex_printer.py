@@ -26,7 +26,7 @@ class ShowComplexNumberInPolar(gdb.Parameter):
             return "complex-show-polar is disabled"
 
     def get_show_string(self, svalue):
-        return f"complex-show-polar is set to {svalue}"
+        return "complex-show-polar is set to {svalue}".format(svalue=svalue)
 
 
 complex_show_polar = ShowComplexNumberInPolar()
